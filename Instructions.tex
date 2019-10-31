@@ -121,12 +121,27 @@ Internet接入不是必须的。
         \item 准备一个Redis数据库
         \item 准备一台收款用、具备invoice权限的lnd，取得lnd的macroon，详见\ref{sec:lnd-macroon}
         \item 准备 Azure Service Bus 服务，我们会用到其中的队列服务
-        \item 安装 .Net Core，请参考 \url{https://dotnet.microsoft.com/download/linux-package-manager/debian10/runtime-current}
+        \item 安装 .Net Core
         \item 下载并解压最新的服务器软件
         \item 配置服务器，详见 \ref{sec:server-config}
     \end{enumerate}
 
-\subsection{获取lnd macroon}\label{sec:lnd-macroon}
+\subsection{Step by step}
+    \subsubsection{SQL Server}
+    为简化流程，建议用户使用Azure SQL database. 请参阅 \url{https://docs.microsoft.com/en-us/azure/sql-database/sql-database-single-database-get-started?tabs=azure-portal} 的用户指南。
+    
+    \subsubsection{Redis}
+        \begin{lstlisting}
+            $ # Install & start Redis
+            $ sudo apt-get install redis-server
+            $ sudo service redis-server start
+        \end{lstlisting}
+
+    \subsubsection{安装lnd}
+
+请参照 \url{https://github.com/lightningnetwork/lnd/blob/master/docs/INSTALL.md} 提供的安装方法。
+
+    \subsubsection{获取lnd macroon}\label{sec:lnd-macroon}
 
 请使用如下命令获得macroon：
 
@@ -141,7 +156,7 @@ base64 [lnd config dir]/data/chain/[coin name]/[net name]/invoice.macaroon
     假定lnd配置文件在\verb|~/.lnd|下、使用\verb|bitcoin|并运行在\verb|simnet|上，则使用如下命令获得macroon，如图\ref{fig:show-macaroon}:
         \begin{verbatim}
         base64 ~/.lnd/data/chain/bitcoin/simnet/invoice.macaroon
-        \end{verbatim}       
+        \end{verbatim}
     \end{exmp}
 
     \begin{figure}[htbp]
@@ -151,7 +166,7 @@ base64 [lnd config dir]/data/chain/[coin name]/[net name]/invoice.macaroon
         \label{fig:show-macaroon}
     \endminipage\hfill
     \end{figure}
-        
+
 请记录返回的字符串，字符串应当类似如下内容：
 \begin{verbatim}
 AgEDbG5kAkcDChCgFwjL2rjDWLw+wvgJQYcfEgEwGhYkw2FkZHJlc3MSBHJlYWQSBXdyaXRlGhcK
@@ -159,6 +174,25 @@ CGludm9pY2VzEgRyZzFkEgV3cml0ZQAABiBXFdpRU199nTuLZx5AX7Lecl29vGRwoZBs7FNc/jcr
 qw==
 \end{verbatim}
 
+    \subsubsection{Azure ServiceBus}
+请参阅 \url{https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal} 以创建一个Azure ServiceBus. 在Create a queue in the Azure portal步骤中，请参阅指南，创建如下四个queue:
+\begin{itemize}
+  \item VendingMachineUnlock
+  \item PaymentExpiry
+  \item ProductUnfulfilledRefund
+  \item PendingLightningNetworkInvoice
+\end{itemize}
+    
+    \subsubsection{安装.Net Core}
+    请参考 请参考 \url{https://dotnet.microsoft.com/download/linux-package-manager/debian10/runtime-current} 以安装 .Net Core Runtime
+    
+    \subsubsection{安装服务器}
+    
+        \begin{lstlisting}
+$ # Install server
+$ wget \ https://github.com/Andoromeda-Foundation/CryptoVendingMachineSoftware/releases/download/1.0.0-alpha/server.tar.gz
+$ tar xf server.tar.gz
+        \end{lstlisting}
 
 \subsection{服务器配置}\label{sec:server-config}
 
@@ -301,7 +335,7 @@ Azure Service服务的连接字符串
     \begin{verbatim}
     dotnet XiaoTianQuanServer.dll
     \end{verbatim}
-    
+
 如果命令行没有报告任何错误，服务器即启动完成。
 
 \subsection{服务器软件FAQ}
@@ -310,12 +344,12 @@ Azure Service服务的连接字符串
 
 \begin{verbatim}
 fail: XiaoTianQuanServer.Services.LightningNetwork.LightningNetworkSubscribeService[0]
-      invoice subscription request failed 
-      A connection attempt failed because the connected party did not properly 
-      respond after a period of time, or established connection failed because 
+      invoice subscription request failed
+      A connection attempt failed because the connected party did not properly
+      respond after a period of time, or established connection failed because
       connected host has failed to respond.
-      A connection attempt failed because the connected party did not properly 
-      respond after a period of time, or established connection failed because 
+      A connection attempt failed because the connected party did not properly
+      respond after a period of time, or established connection failed because
       connected host has failed to respond.
 \end{verbatim}
 
@@ -340,7 +374,7 @@ fail: XiaoTianQuanServer.Services.LightningNetwork.LightningNetworkSubscribeServ
   \item Visual Studio 2019 w/ Universal Windows App development
 \end{itemize}
 
-首先请签出位于 
+首先请签出位于
 \url{https://github.com/Andoromeda-Foundation/CryptoVendingMachineSoftware} 的售货机软件的代码。打开解决方案，找到VendingMachineKiosk项目。
 
 \subsection{配置}\label{sec:vm-soft-config}
@@ -381,7 +415,7 @@ fail: XiaoTianQuanServer.Services.LightningNetwork.LightningNetworkSubscribeServ
         \label{fig:remotemachineselection}
     \endminipage\hfill
     \end{figure}
-    
+
 \section{售货机硬件}
 
 售货机硬件包含两部分，通用的应用板部分（即上一章的内容）已经适配不同售货机的控制板部分。我们在开发中，适配了百嵩实业的一款简易售货机。如果您有需要，可以自行定制售货机的控制板以适应不同的售货机硬件。
@@ -437,10 +471,10 @@ fail: XiaoTianQuanServer.Services.LightningNetwork.LightningNetworkSubscribeServ
 
 \begin{lstlisting}
 # Generate secp384r1 ECC root private key
-openssl ecparam -genkey -name secp384r1 >rootCA.key 
+openssl ecparam -genkey -name secp384r1 >rootCA.key
 
 # Generate a self-signed 10-year certificate with SHA-256 as digest
-openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 -out rootCA.crt 
+openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 -out rootCA.crt
 \end{lstlisting}
 
 
